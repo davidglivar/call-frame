@@ -1,11 +1,29 @@
 {
   "name": "call-frame",
   "version": "0.0.1",
-  "description": "",
+  "description": "Object that runs through a call stack on every frame (rAF).",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "npm run build",
+    "test": "testling | faucet",
+    "build": "gulp"
   },
   "author": "David Glivar <davidglivar@gmail.com>",
-  "license": "BSD-3 Clause"
+  "license": "BSD-3 Clause",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:davidglivar/call-frame.git"
+  },
+  "testling": {
+    "files": "test/frame.test.js",
+    "scripts": "test/support/polyfill.js"
+  },
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "gulp": "^3.8.10",
+    "gulp-6to5": "^1.0.2",
+    "gulp-jshint": "^1.9.0",
+    "tape": "^3.0.3",
+    "testling": "^1.7.1"
+  }
 }
