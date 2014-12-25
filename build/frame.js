@@ -1,19 +1,21 @@
 "use strict";
 
-var delta = 0, frameCount = 0, interval = 0, now = null, rid = null, stack = [], startedAt = null, stopped = true, then = null;
+var delta = 0, frameCount = 0, interval = 0, now = null, rid = null, startedAt = null, stopped = true, then = null;
 
 var frame = {
   fps: 0,
 
   framerate: 59,
 
+  stack: [],
+
   add: function (func, scope) {
     if (typeof func !== "function") {
       throw new TypeError("Expected a function, got " + typeof func);
     }
-    if (this.exists(func)) return false;
-    func.__scope = scope || func;
-    stack.push(func);
+    if (this.exists(func) !== false) return false;
+    scope = scope || this;
+    this.stack.push({ func: func, scope: scope });
     return true;
   },
 
@@ -22,15 +24,19 @@ var frame = {
   clearTimeout: function (id) {},
 
   exists: function (func) {
-    return stack.indexOf(func) > -1;
+    for (var i = 0, l = this.stack.length; i < l; i++) {
+      if (this.stack[i].func === func) return i;
+    }
+    return false;
   },
 
   remove: function (func) {
     if (typeof func !== "function") {
       throw new TypeError("Expected a function, got " + typeof func);
     }
-    if (!this.exists(func)) return false;
-    stack.splice(stack.indexOf(func), 1);
+    var index = this.exists(func);
+    if (index === false) return false;
+    this.stack.splice(index, 1);
     return true;
   },
 
@@ -42,7 +48,7 @@ var frame = {
     var _this = this;
     if (!stopped) return false;
     stopped = false;
-    then = started = window.performance.now();
+    then = startedAt = window.performance.now();
     interval = 1000 / this.framerate;
     rid = window.requestAnimationFrame(function (time) {
       return _this.update(time);
@@ -69,10 +75,10 @@ var frame = {
     delta = now - then;
     if (delta >= interval) {
       then = now - (delta % interval);
-      this.fps = Math.round(1000 / ((now - started) / ++frameCount) * 100) / 100;
-      for (var _iterator = stack[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) {
-        var func = _step.value;
-        func.call(func.__scope);
+      this.fps = Math.round(1000 / ((now - startedAt) / ++frameCount) * 100) / 100;
+      for (var _iterator = this.stack[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) {
+        var item = _step.value;
+        item.func.call(item.scope);
       }
     }
   }

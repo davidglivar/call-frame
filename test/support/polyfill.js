@@ -29,3 +29,10 @@
             clearTimeout(id);
         };
 }());
+
+window.performance = (window.performance || {
+  offset: Date.now(),
+  now: function now(){
+    return Date.now() - this.offset;
+  }
+});
